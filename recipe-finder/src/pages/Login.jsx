@@ -13,7 +13,9 @@ const Login = () => {
       const res = await axios.post("/api/auth/login", { email, password });
 
       localStorage.setItem("user", JSON.stringify(res.data));
+
       window.dispatchEvent(new Event("userChanged"));
+
       navigate("/");
     } catch (error) {
       alert(error.response?.data?.message || "Login failed");

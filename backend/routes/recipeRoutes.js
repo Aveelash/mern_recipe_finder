@@ -1,8 +1,9 @@
 import express from "express";
+import protect from "../middleware/authMiddleware.js"; // no adminOnly
+
 import {
   getAllRecipes,
   getRecipeById,
-  searchRecipes,
   createRecipe,
   updateRecipe,
   deleteRecipe,
@@ -10,10 +11,10 @@ import {
 
 const router = express.Router();
 
-router.get("/", getAllRecipes);
-router.get("/:id", getRecipeById);
-router.post("/", createRecipe);
-router.put("/:id", updateRecipe); // optional
-router.delete("/:id", deleteRecipe); // optional
+router.get("/", protect, getAllRecipes);
+router.post("/", protect, createRecipe);
+router.get("/:id", protect, getRecipeById);
+router.put("/:id", protect, updateRecipe);
+router.delete("/:id", protect, deleteRecipe);
 
 export default router;

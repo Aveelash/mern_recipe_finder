@@ -10,10 +10,22 @@ const Home = () => {
 
   const fetchRecipes = async (query = "") => {
     try {
-      const res = await axios.get(`/api/recipes${query ? `?q=${query}` : ""}`);
+      const user = JSON.parse(localStorage.getItem("user"));
+      const token = user?.token;
+
+      const res = await axios.get(`/api/recipes${query ? `?q=${query}` : ""}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       setRecipes(res.data);
     } catch (error) {
       console.error("Error fetching recipes:", error);
+      if (error.response?.status === 401) {
+        alert("Session expired. Please log in again.");
+        navigate("/login");
+      }
     }
   };
 
@@ -27,13 +39,26 @@ const Home = () => {
   const handleDelete = async (id) => {
     if (confirm("Are you sure you want to delete this recipe?")) {
       try {
-        await axios.delete(`/api/recipes/${id}`);
+        const user = JSON.parse(localStorage.getItem("user"));
+        const token = user?.token;
+
+        await axios.delete(`/api/recipes/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
         fetchRecipes(search);
       } catch (err) {
         console.error("Failed to delete:", err);
+        if (err.response?.status === 401) {
+          alert("You are not authorized to delete this recipe. Please log in.");
+          navigate("/login");
+        }
       }
     }
   };
+
   const handleSearch = (e) => {
     e.preventDefault();
     navigate(`/?q=${search}`);

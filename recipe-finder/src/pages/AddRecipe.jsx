@@ -14,9 +14,30 @@ const AddRecipe = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const recipe = { ...form, ingredients: form.ingredients.split(",") };
-    await axios.post("/api/recipes", recipe);
-    navigate("/");
+    const user = JSON.parse(localStorage.getItem("user"));
+
+    if (!user) {
+      alert("You must be logged in to add a recipe.");
+      return;
+    }
+
+    const recipe = {
+      ...form,
+      ingredients: form.ingredients.split(","),
+      user: user._id, // optional: for extra validation in controller
+    };
+
+    try {
+      await axios.post("/api/recipes", recipe, {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      });
+      navigate("/");
+    } catch (err) {
+      console.error("Error adding recipe:", err);
+      alert("Failed to add recipe");
+    }
   };
 
   return (

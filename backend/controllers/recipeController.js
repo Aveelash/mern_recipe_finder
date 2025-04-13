@@ -1,26 +1,12 @@
 import Recipe from "../models/Recipe.js";
 
 export const getAllRecipes = async (req, res) => {
-  const q = req.query.q;
-
   try {
-    let recipes;
-
-    if (q) {
-      recipes = await Recipe.find({
-        $or: [
-          { title: { $regex: q, $options: "i" } },
-          { cuisine: { $regex: q, $options: "i" } },
-          { ingredients: { $elemMatch: { $regex: q, $options: "i" } } },
-        ],
-      });
-    } else {
-      recipes = await Recipe.find().sort({ createdAt: -1 });
-    }
-
-    res.json(recipes);
-  } catch (err) {
-    res.status(500).json({ error: "Failed to fetch recipes" });
+    const recipes = await Recipe.find().sort({ createdAt: -1 });
+    res.status(200).json(recipes);
+  } catch (error) {
+    console.error("Error fetching recipes:", error.message);
+    res.status(500).json({ message: "Server error while fetching recipes" });
   }
 };
 
@@ -54,7 +40,16 @@ export const getRecipeById = async (req, res) => {
 // POST new recipe
 export const createRecipe = async (req, res) => {
   try {
-    const recipe = new Recipe(req.body);
+    const { title, ingredients, instructions, cuisine, image } = req.body;
+
+    const recipe = new Recipe({
+      title,
+      ingredients,
+      instructions,
+      cuisine,
+      image,
+      user: req.user._id, // 👈 from the middleware, secure!
+    });
     await recipe.save();
     res.status(201).json(recipe);
   } catch (err) {

@@ -17,7 +17,6 @@ const Header = () => {
   useEffect(() => {
     getUser();
 
-    // Listen for custom event to update header on login/logout
     const handleStorageChange = () => getUser();
     window.addEventListener("userChanged", handleStorageChange);
 
@@ -37,7 +36,7 @@ const Header = () => {
   const handleLogout = () => {
     localStorage.removeItem("user");
     setUser(null);
-    window.dispatchEvent(new Event("userChanged")); // trigger header update
+    window.dispatchEvent(new Event("userChanged"));
     navigate("/login");
   };
 
@@ -49,9 +48,17 @@ const Header = () => {
 
       {user ? (
         <div className="flex items-center space-x-4">
+          {/* AddRecipe Link (available to all users) */}
+          <Link to="/add" className="text-blue-500 font-medium hover:underline">
+            Add Recipe
+          </Link>
+
+          {/* User initials */}
           <div className="w-10 h-10 bg-blue-500 text-white flex items-center justify-center rounded-full font-bold text-lg">
             {getInitials(user.name)}
           </div>
+
+          {/* Logout */}
           <button
             onClick={handleLogout}
             className="text-sm bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
