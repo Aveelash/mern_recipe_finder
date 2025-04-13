@@ -12,11 +12,16 @@ const Login = () => {
     try {
       const res = await axios.post("/api/auth/login", { email, password });
 
+      // Store user data and role in localStorage
       localStorage.setItem("user", JSON.stringify(res.data));
-
       window.dispatchEvent(new Event("userChanged"));
 
-      navigate("/");
+      // Redirect based on role
+      if (res.data.role === "admin") {
+        navigate("/admin"); // Redirect to the admin panel for admins
+      } else {
+        navigate("/"); // Redirect to the home page for regular users
+      }
     } catch (error) {
       alert(error.response?.data?.message || "Login failed");
     }

@@ -5,6 +5,7 @@ import axios from "axios";
 const Home = () => {
   const [recipes, setRecipes] = useState([]);
   const [search, setSearch] = useState("");
+  const [isLoading, setIsLoading] = useState(true); // State to track loading
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -12,6 +13,8 @@ const Home = () => {
     try {
       const user = JSON.parse(localStorage.getItem("user"));
       const token = user?.token;
+
+      setIsLoading(true); // Start loading
 
       const res = await axios.get(`/api/recipes${query ? `?q=${query}` : ""}`, {
         headers: {
@@ -26,6 +29,8 @@ const Home = () => {
         alert("Session expired. Please log in again.");
         navigate("/login");
       }
+    } finally {
+      setIsLoading(false); // End loading after fetching
     }
   };
 
@@ -89,7 +94,14 @@ const Home = () => {
         </button>
       </form>
 
-      {recipes.length === 0 ? (
+      {/* Loading State */}
+      {isLoading && (
+        <div className="flex justify-center items-center">
+          <span className="text-blue-500 text-xl">Loading...</span>
+        </div>
+      )}
+
+      {recipes.length === 0 && !isLoading ? (
         <p className="text-center text-gray-500">No recipes found.</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
