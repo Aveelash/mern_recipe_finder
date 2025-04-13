@@ -2,11 +2,13 @@ import Recipe from "../models/Recipe.js";
 
 export const getAllRecipes = async (req, res) => {
   try {
-    const recipes = await Recipe.find().sort({ createdAt: -1 });
+    const user = req.user; // Get the logged-in user from the middleware
+    const recipes = await Recipe.find({ user: user._id }); // Filter by user ID
     res.status(200).json(recipes);
-  } catch (error) {
-    console.error("Error fetching recipes:", error.message);
-    res.status(500).json({ message: "Server error while fetching recipes" });
+  } catch (err) {
+    res
+      .status(500)
+      .json({ message: "Failed to fetch recipes", error: err.message });
   }
 };
 

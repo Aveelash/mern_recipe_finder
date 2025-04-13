@@ -1,3 +1,4 @@
+// Home.js (frontend)
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
