@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 const AddRecipe = () => {
   const [form, setForm] = useState({
     title: "",
+    description: "",
     ingredients: "",
     instructions: "",
     cuisine: "",
@@ -21,21 +22,37 @@ const AddRecipe = () => {
       return;
     }
 
+    // Ensure the ingredients are an array and remove extra spaces
+    const ingredients = form.ingredients
+      .split(",")
+      .map((ingredient) => ingredient.trim());
+
+    // Define the recipe object
     const recipe = {
-      ...form,
-      ingredients: form.ingredients.split(","),
-      user: user._id, // optional: for extra validation in controller
+      title: form.title,
+      description: form.description,
+      ingredients: ingredients,
+      instructions: form.instructions,
+      cuisine: form.cuisine,
+      image: form.image,
     };
 
+    console.log("Submitting recipe:", recipe);
+
     try {
-      await axios.post("/api/recipes", recipe, {
+      const res = await axios.post("/api/recipes", recipe, {
         headers: {
+          "Content-Type": "application/json",
           Authorization: `Bearer ${user.token}`,
         },
       });
+      console.log("Recipe added successfully:", res.data);
       navigate("/");
     } catch (err) {
-      console.error("Error adding recipe:", err);
+      console.error(
+        "❌ Error adding recipe:",
+        err.response?.data || err.message
+      );
       alert("Failed to add recipe");
     }
   };
