@@ -1,4 +1,3 @@
-// Home.js (frontend)
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -6,7 +5,7 @@ import axios from "axios";
 const Home = () => {
   const [recipes, setRecipes] = useState([]);
   const [search, setSearch] = useState("");
-  const [isLoading, setIsLoading] = useState(true); // State to track loading
+  const [isLoading, setIsLoading] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -15,7 +14,7 @@ const Home = () => {
       const user = JSON.parse(localStorage.getItem("user"));
       const token = user?.token;
 
-      setIsLoading(true); // Start loading
+      setIsLoading(true);
 
       const res = await axios.get(`/api/recipes${query ? `?q=${query}` : ""}`, {
         headers: {
@@ -31,7 +30,7 @@ const Home = () => {
         navigate("/login");
       }
     } finally {
-      setIsLoading(false); // End loading after fetching
+      setIsLoading(false);
     }
   };
 
@@ -41,6 +40,11 @@ const Home = () => {
     setSearch(query);
     fetchRecipes(query);
   }, [location]);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    navigate(`/?q=${search}`); // Only navigate — fetch will be triggered by useEffect
+  };
 
   const handleDelete = async (id) => {
     if (confirm("Are you sure you want to delete this recipe?")) {
@@ -63,12 +67,6 @@ const Home = () => {
         }
       }
     }
-  };
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    navigate(`/?q=${search}`);
-    fetchRecipes(search);
   };
 
   return (
@@ -120,7 +118,6 @@ const Home = () => {
                 <h2 className="text-lg font-semibold">{recipe.title}</h2>
                 <p className="text-gray-500 text-sm mb-2">{recipe.cuisine}</p>
 
-                {/* Action Buttons */}
                 <div className="flex justify-between text-sm mt-4">
                   <Link
                     to={`/recipes/${recipe._id}`}

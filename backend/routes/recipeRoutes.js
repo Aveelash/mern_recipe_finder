@@ -14,7 +14,7 @@ const router = express.Router();
 router.get("/", protect, getAllRecipes);
 router.post("/", protect, createRecipe);
 router.get("/:id", protect, getRecipeById);
-router.put("/:id", protect, updateRecipe);
+router.put("/:recipeId", protect, updateRecipe);
 router.delete("/:id", protect, deleteRecipe);
 
 export default router;

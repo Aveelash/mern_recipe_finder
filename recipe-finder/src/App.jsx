@@ -18,7 +18,6 @@ function App() {
         <Route path="/edit/:id" element={<EditRecipe />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        {/* ✅ ADD THIS */}
       </Routes>
     </>
   );

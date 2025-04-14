@@ -1,34 +1,28 @@
 import Recipe from "../models/Recipe.js";
 
-// GET all recipes (for the logged-in user)
 export const getAllRecipes = async (req, res) => {
+  const { q } = req.query;
+
   try {
-    const user = req.user; // Get the logged-in user from the middleware
-    const recipes = await Recipe.find({ user: user._id }); // Filter by user ID
+    const userId = req.user._id; // 👤 Get the logged-in user
+
+    const searchQuery = {
+      user: userId, // 🔒 Show only recipes created by this user
+    };
+
+    if (q) {
+      const searchRegex = new RegExp(q, "i");
+      searchQuery.$or = [
+        { title: searchRegex },
+        { cuisine: searchRegex },
+        { ingredients: { $elemMatch: { $regex: searchRegex } } },
+      ];
+    }
+
+    const recipes = await Recipe.find(searchQuery);
     res.status(200).json(recipes);
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Failed to fetch recipes", error: err.message });
-  }
-};
-
-// SEARCH by name, ingredient, cuisine (for the logged-in user)
-export const searchRecipes = async (req, res) => {
-  const q = req.query.q;
-  try {
-    const user = req.user; // Get the logged-in user
-    const recipes = await Recipe.find({
-      user: user._id, // Filter by user ID to only search their own recipes
-      $or: [
-        { title: { $regex: q, $options: "i" } },
-        { cuisine: { $regex: q, $options: "i" } },
-        { ingredients: { $elemMatch: { $regex: q, $options: "i" } } },
-      ],
-    });
-    res.json(recipes);
-  } catch (err) {
-    res.status(500).json({ error: "Search failed" });
+    res.status(500).json({ message: "Error fetching recipes" });
   }
 };
 
@@ -95,24 +89,29 @@ export const createRecipe = async (req, res) => {
 // PUT (update recipe) - Ensure it belongs to the logged-in user
 export const updateRecipe = async (req, res) => {
   try {
-    if (!req.user) {
-      return res.status(401).json({ error: "Unauthorized" });
+    const { recipeId } = req.params;
+
+    const recipe = await Recipe.findById(recipeId);
+    if (!recipe) {
+      return res.status(404).json({ message: "Recipe not found" });
     }
 
-    const recipe = await Recipe.findById(req.params.id);
     if (recipe.user.toString() !== req.user._id.toString()) {
-      return res
-        .status(403)
-        .json({ error: "You can only update your own recipes" });
+      return res.status(403).json({ message: "Not authorized" });
     }
 
-    const updated = await Recipe.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
+    recipe.title = req.body.title || recipe.title;
+    recipe.description = req.body.description || recipe.description;
+    recipe.ingredients = req.body.ingredients || recipe.ingredients;
+    recipe.instructions = req.body.instructions || recipe.instructions;
+    recipe.cuisine = req.body.cuisine || recipe.cuisine;
+    recipe.image = req.body.image || recipe.image;
 
-    res.json(updated);
-  } catch (err) {
-    res.status(400).json({ error: "Update failed" });
+    const updatedRecipe = await recipe.save();
+    res.json(updatedRecipe);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Update failed" });
   }
 };
 

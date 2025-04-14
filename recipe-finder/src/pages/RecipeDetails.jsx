@@ -5,12 +5,38 @@ import axios from "axios";
 const RecipeDetails = () => {
   const { id } = useParams();
   const [recipe, setRecipe] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    axios.get(`/api/recipes/${id}`).then((res) => setRecipe(res.data));
+    const fetchRecipe = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const { data } = await axios.get(
+          `http://localhost:5000/api/recipes/${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setRecipe(data);
+        setLoading(false); // Set loading to false after fetching data
+      } catch (err) {
+        console.error("❌ Error fetching recipe:", err);
+        setError("Failed to fetch the recipe. Please try again later.");
+        setLoading(false); // Set loading to false in case of error
+      }
+    };
+
+    fetchRecipe();
   }, [id]);
 
-  if (!recipe) return <p className="text-center mt-10 text-lg">Loading...</p>;
+  if (loading)
+    return <p className="text-center mt-10 text-lg">Loading recipe...</p>;
+
+  if (error)
+    return <p className="text-center mt-10 text-lg text-red-600">❌ {error}</p>;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#f5f7fa] to-[#c3cfe2] p-6 flex justify-center items-start">
